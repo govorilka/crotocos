@@ -22,7 +22,7 @@ PngExport.prototype.fileCounter = 0;
 PngExport.prototype.save = function(layer)
 {
     this.fileCounter++;
-    var filename = '/images/i' + this.fileCounter +'.png';
+    var filename = 'images/i' + this.fileCounter +'.png';
     
     var width = layer.bounds[2].as("px") - layer.bounds[0].as("px");
     var height = layer.bounds[3].as("px") - layer.bounds[1].as("px");
@@ -51,7 +51,7 @@ PngExport.prototype.save = function(layer)
 
     // Сохраняем временный документ в формате PNG
        
-    var pngFile = new File(this.path + filename);
+    var pngFile = new File(this.path + "/" + filename);
     tmpDocument.exportDocument(pngFile, ExportType.SAVEFORWEB, this.options);
 
     // Закрываем временный документ, без сохранения изменений

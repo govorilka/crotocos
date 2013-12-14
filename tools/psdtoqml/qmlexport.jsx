@@ -4,6 +4,7 @@
 
 // @include "qmlfile.jsx"
 // @include "pngexport.jsx"
+// @include "layerproxy.jsx"
 
 function QmlExport(path, document)
 {
@@ -24,62 +25,56 @@ function QmlExport(path, document)
     qmlfile.endElement();
 }
 
+QmlExport.prototype.itemCounter = 0;
+
 QmlExport.prototype.doExportLayers = function(qmlfile, layers)
 {
-    var count = layers.length;
-    for (var index  = 0; index < count; index++)
+    for (var index = layers.length - 1; index >= 0; index--)
     {
-        var layer = layers[index];
-        if (layer.visible)
+        layerProxy = new LayerProxy(layers[index]);
+        
+        // Не видимые слои сохранять не будем
+        if (!layerProxy.layer.visible)
         {
-            if(layer.typename == "LayerSet")
+            continue;
+        }
+    
+        // Получаем имя qml-типа
+        var qmltype = layerProxy.qmlType();      
+        if (qmltype.size == 0)
+        {
+            continue;
+        }
+    
+        // Пока запичываем все элементы с именами item1, item2, item3
+        // - в именах встречаются русские буквы и пробелы и их надо
+        // конвертировать
+        this.itemCounter++;
+        qmlfile.writeEmptyLine();
+        qmlfile.startElement(qmltype, "item" + this.itemCounter, layerProxy.layer.name);
+        
+        if(layerProxy.layer.typename == "LayerSet")
+        {
+            this.doExportLayers(qmlfile, layerProxy.layer.layers);
+        }
+        else
+        {
+            var layer = layerProxy.layer;
+            
+            switch (qmltype)
             {
-                this.doExportLayerSet(qmlfile, layer);
+            case "Image":
+                qmlfile.writeStringProperty("source", this.pngExport.save(layer));
+                break;
+            
+            case "Text":
+                qmlfile.writeProperty("font", layer.textItem.font);
+                qmlfile.writeProperty("color", layer.textItem.color);
+                qmlfile.writeStringProperty("text", layer.textItem.contents);
+                break;
             }
-            else if(layer.typename == "ArtLayer")
-            {
-                this.doExportArtLayer(qmlfile, layer);
-            }  
         }
+        
+        qmlfile.endElement();
     }
-}
-
-QmlExport.prototype.doExportLayerSet = function(qmlfile, layer)
-{
-    qmlfile.writeEmptyLine();
-    qmlfile.startElementWithId("Item", layer.name);
-    
-    this.doExportLayers(qmlfile, layer.layers);
-    
-    qmlfile.endElement();
-}
-
-QmlExport.prototype.doExportArtLayer = function(qmlfile, layer)
-{
-    if (layer.kind !== undefined)
-    {
-        if (layer.kind == LayerKind.TEXT)
-        {
-            this.doExportText(qmlfile, layer);
-            return;
-        }
-    }
-
-    qmlfile.writeEmptyLine();
-    qmlfile.startElementWithId("Image", layer.name);
- 
-    qmlfile.writeStringProperty("source", this.pngExport.save(layer));
-    
-    qmlfile.endElement();
-}
-
-QmlExport.prototype.doExportText = function(qmlfile, layer)
-{
-    qmlfile.writeEmptyLine();
-    qmlfile.startElementWithId("Text", layer.name); 
-        var textItem = layer.textItem;
-        qmlfile.writeProperty("font", textItem.font);
-        qmlfile.writeProperty("color", textItem.color);
-        qmlfile.writeStringProperty("text", textItem.contents);
-    qmlfile.endElement();
 }
