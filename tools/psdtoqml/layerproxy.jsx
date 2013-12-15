@@ -2,9 +2,31 @@
  * Crotocos::psdlayerproxy.jsx
  */
 
-function LayerProxy(layer)
+function LayerProxy(parent, layer)
 {
+    this.parent = parent;
     this.layer = layer;
+    
+    var parentX = 0;
+    var parentY = 0;
+    if (this.parent !== undefined)
+    {
+        parentX = this.parent.documentX;
+        parentY = this.parent.documentY;
+    }
+
+    this.documentX = 0;
+    this.documentY = 0;
+
+    var bounds = this.layer.bounds;
+    if (bounds !== undefined)
+    {
+       this.documentX = bounds[0].as("px");
+       this.documentY = bounds[1].as("px");
+    }
+
+    this.x = this.documentX - parentX;
+    this.y = this.documentY - parentY;
 }
 
 LayerProxy.prototype.qmlType = function()

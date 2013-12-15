@@ -23,7 +23,7 @@ function directoryName()
     chooseDirectoryDlg.outputName.buttonBrowse =chooseDirectoryDlg.groupFirstLine.add("button", undefined, "...");
     chooseDirectoryDlg.outputName.buttonBrowse.onClick = function ()  {
         var selFolder = Folder.selectDialog("Путь к QML-файлам", "~");
-        if (selFolder != null) 
+        if (selFolder != null)
             chooseDirectoryDlg.outputName.text = selFolder.fsName;
     }
         

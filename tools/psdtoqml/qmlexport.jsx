@@ -18,27 +18,29 @@ function QmlExport(path, document)
     var qmlfile = new QmlFile(this.path + "/main.qml");
     qmlfile.writeLine("import QtQuick 2.1");
     qmlfile.writeEmptyLine();
-    qmlfile.startElement("Item");
+    qmlfile.startElement("Item", "root", document.name);
         qmlfile.writeProperty("width", document.width.as("px"));
         qmlfile.writeProperty("height", document.height.as("px"));
-        this.doExportLayers(qmlfile, this.document.layers);
+        this.doExportLayers(qmlfile, undefined, this.document.layers);
     qmlfile.endElement();
 }
 
 QmlExport.prototype.itemCounter = 0;
 
-QmlExport.prototype.doExportLayers = function(qmlfile, layers)
+QmlExport.prototype.doExportLayers = function(qmlfile, parent, layers)
 {
     for (var index = layers.length - 1; index >= 0; index--)
     {
-        layerProxy = new LayerProxy(layers[index]);
-        
+        var layer = layers[index];
+  
         // Не видимые слои сохранять не будем
-        if (!layerProxy.layer.visible)
+        if (!layer.visible)
         {
             continue;
         }
     
+        var layerProxy = new LayerProxy(parent, layer);
+            
         // Получаем имя qml-типа
         var qmltype = layerProxy.qmlType();      
         if (qmltype.size == 0)
@@ -53,9 +55,12 @@ QmlExport.prototype.doExportLayers = function(qmlfile, layers)
         qmlfile.writeEmptyLine();
         qmlfile.startElement(qmltype, "item" + this.itemCounter, layerProxy.layer.name);
         
+        qmlfile.writeProperty("x", layerProxy.x);
+        qmlfile.writeProperty("y", layerProxy.y);
+        
         if(layerProxy.layer.typename == "LayerSet")
         {
-            this.doExportLayers(qmlfile, layerProxy.layer.layers);
+            this.doExportLayers(qmlfile, layerProxy, layerProxy.layer.layers);
         }
         else
         {
@@ -68,8 +73,8 @@ QmlExport.prototype.doExportLayers = function(qmlfile, layers)
                 break;
             
             case "Text":
-                qmlfile.writeProperty("font", layer.textItem.font);
-                qmlfile.writeProperty("color", layer.textItem.color);
+                //qmlfile.writeProperty("font", layer.textItem.font);
+                //qmlfile.writeProperty("color", layer.textItem.color);
                 qmlfile.writeStringProperty("text", layer.textItem.contents);
                 break;
             }
