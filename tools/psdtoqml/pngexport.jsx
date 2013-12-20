@@ -38,15 +38,18 @@ PngExport.prototype.save = function(layer)
         NewDocumentMode.RGB,
         DocumentFill.TRANSPARENT,
         this.document.pixelAspectRatio,
-        this.document.bitsPerChannel
+        this.document.bitsPerChannel,
+        this.document.colorProfileName
     );
-    
+  
     // Копируем слой во временный документ
     app.activeDocument = this.document;
     newLayer = layer.duplicate(tmpDocument, ElementPlacement.INSIDE);
     
     // Устанавливаем слой по центр временного документа
     app.activeDocument = tmpDocument;
+    
+    newLayer.positionLocked = false;
     newLayer.translate(-layer.bounds[0], -layer.bounds[1]);
 
     // Сохраняем временный документ в формате PNG

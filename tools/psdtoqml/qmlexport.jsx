@@ -73,8 +73,8 @@ QmlExport.prototype.doExportLayers = function(qmlfile, parent, layers)
                 break;
             
             case "Text":
-                //qmlfile.writeProperty("font", layer.textItem.font);
-                //qmlfile.writeProperty("color", layer.textItem.color);
+                qmlfile.writeStringProperty("font.family", layer.textItem.font);
+                qmlfile.writeColor("color", layer.textItem.color);
                 qmlfile.writeStringProperty("text", layer.textItem.contents);
                 break;
             }

@@ -51,6 +51,11 @@ QmlFile.prototype.writeStringProperty = function(property, value)
     this.file.write(this.lineSpace + property + ": \"" + value + "\"\n");
 }
 
+QmlFile.prototype.writeColor = function(property, color)
+{
+    this.writeStringProperty(property, "#" + color.rgb.hexValue);
+}
+
 QmlFile.prototype.writeEmptyLine = function()
 {
     this.file.write("\n");
