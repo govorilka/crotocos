@@ -58,6 +58,15 @@ QmlExport.prototype.doExportLayers = function(qmlfile, parent, layers)
         qmlfile.writeProperty("x", layerProxy.x);
         qmlfile.writeProperty("y", layerProxy.y);
         
+        // Значение прозрачности. В Photoshop'е оно задаётся 
+        // значением от 0 до 100 в процентах. Если значение прозрачности
+        // не равно 100%, то мы записываем его в файл.
+        var opacity = layerProxy.layer.opacity;
+        if (opacity != 100.0)
+        { 
+            qmlfile.writeProperty("opacity", opacity / 100.0);
+        }
+        
         if(layerProxy.layer.typename == "LayerSet")
         {
             this.doExportLayers(qmlfile, layerProxy, layerProxy.layer.layers);

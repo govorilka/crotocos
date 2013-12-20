@@ -50,6 +50,7 @@ PngExport.prototype.save = function(layer)
     app.activeDocument = tmpDocument;
     
     newLayer.positionLocked = false;
+    newLayer.opacity = 100.0;
     newLayer.translate(-layer.bounds[0], -layer.bounds[1]);
 
     // Сохраняем временный документ в формате PNG
