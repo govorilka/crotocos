@@ -4,7 +4,7 @@
  */
 #target photoshop
 
-// @include "qmlexport.jsx"
+// @include "src/qmlexport.jsx"
 
 // Получение имени директории, куда будем экпортировать содержимое файла
 function directoryName()

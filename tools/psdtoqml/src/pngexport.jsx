@@ -4,7 +4,7 @@
 
 function PngExport(path, document)
 {
-    this.path = path;
+    this.path = path + "/images";
     this.document = document;
 }
 
@@ -22,7 +22,7 @@ PngExport.prototype.fileCounter = 0;
 PngExport.prototype.save = function(layer)
 {
     this.fileCounter++;
-    var filename = 'images/i' + this.fileCounter +'.png';
+    var filename = this.path + '/i' + this.fileCounter +'.png';
     
     var width = layer.bounds[2].as("px") - layer.bounds[0].as("px");
     var height = layer.bounds[3].as("px") - layer.bounds[1].as("px");
@@ -53,11 +53,21 @@ PngExport.prototype.save = function(layer)
     newLayer.opacity = 100.0;
     newLayer.translate(-layer.bounds[0], -layer.bounds[1]);
 
-    // Сохраняем временный документ в формате PNG
-       
-    var pngFile = new File(this.path + "/" + filename);
-    tmpDocument.exportDocument(pngFile, ExportType.SAVEFORWEB, this.options);
-
+    // Создаём папку images, если она не существует. В эту папку будем сохранять png-файлы
+    var folder = new Folder(this.path);
+    if (folder.exists || folder.create())
+    {
+        // Сохраняем временный документ в формате PNG       
+        var pngFile = new File(filename);
+        tmpDocument.exportDocument(pngFile, ExportType.SAVEFORWEB, this.options);
+    }
+    else
+    {
+        // Папка для картинок не существует и мы не смогли её создать. Поэтому, 
+        // вернём из функции пустую строку
+        filename = "";
+    }
+ 
     // Закрываем временный документ, без сохранения изменений
     tmpDocument.close(SaveOptions.DONOTSAVECHANGES);
     
