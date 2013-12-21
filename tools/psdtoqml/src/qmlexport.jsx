@@ -20,6 +20,22 @@ function QmlExport(params, document)
     // Класс для экспорта png-файлов
     this.pngExport = new PngExport(this.params.path, this.params.useLayerName, document);
     
+    //Файл проекта, чтобы нормально открыть все в QtCreator'e
+    var qmlfile = new QmlFile(this.params.path + "/main.qmlproject");
+    qmlfile.writeLine("import QmlProject 1.0");
+    qmlfile.writeEmptyLine();
+    qmlfile.startElement("Project", "", "");
+        qmlfile.startElement("QmlFiles", "", "");
+            qmlfile.writeStringProperty("directory", ".");
+        qmlfile.endElement();
+        qmlfile.startElement("JavaScriptFiles", "", "");
+            qmlfile.writeStringProperty("directory", ".");
+        qmlfile.endElement();
+        qmlfile.startElement("ImageFiles", "", "");
+            qmlfile.writeStringProperty("directory", ".");
+        qmlfile.endElement();
+    qmlfile.endElement();
+    
     // Основной qmlfile
     var qmlfile = new QmlFile(this.params.path + "/main.qml");
     qmlfile.writeLine("import QtQuick 2.1");
@@ -103,14 +119,29 @@ QmlExport.prototype.doExportLayers = function(qmlfile, parent, layers)
                 break;
             
             case "Text":
-                qmlfile.writeStringProperty("font.family", layer.textItem.font);
-                qmlfile.writeProperty("font.pointSize", layer.textItem.size.as("pt"));
-                qmlfile.writeColor("color", layer.textItem.color);
-                qmlfile.writeStringProperty("text", layer.textItem.contents);
+                this.doExportTextLayer(qmlfile, layerProxy);
                 break;
             }
         }
         
         qmlfile.endElement();
     }
+}
+
+QmlExport.prototype.doExportTextLayer = function(qmlfile, layerProxy)
+{
+    var textItem = layerProxy.layer.textItem;
+    
+    if (textItem.kind == TextType.PARAGRAPHTEXT)
+    {
+        qmlfile.writeProperty("width", layerProxy.width);
+        qmlfile.writeProperty("height", layerProxy.height);
+        qmlfile.writeProperty("wrapMode", "Text.WordWrap");
+    }
+
+    qmlfile.writeStringProperty("font.family", textItem.font);
+    qmlfile.writeProperty("font.pixelSize", textItem.size.as("px"));
+    qmlfile.writeColor("color", textItem.color);
+   
+    qmlfile.writeStringProperty("text", textItem.contents);
 }

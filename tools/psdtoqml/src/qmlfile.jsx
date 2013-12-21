@@ -34,7 +34,10 @@ QmlFile.prototype.startElement = function(className, id, comment)
     this.lineSpaceCount += 4;
     this.lineSpace = new Array(this.lineSpaceCount + 1).join(" ");
     
-    this.writeProperty("id", id);
+    if (id != "")
+    {
+        this.writeProperty("id", id);
+    }
 }
 
 QmlFile.prototype.endElement = function()

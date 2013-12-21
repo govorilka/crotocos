@@ -71,7 +71,7 @@ function directoryName(params)
     chooseDirectoryDlg.buttonCancel.onClick = function () {
         chooseDirectoryDlg.close(0);
     }
- 
+
     return chooseDirectoryDlg.show() == 1 ? true : false;
 }
 
