@@ -17,12 +17,16 @@ function LayerProxy(parent, layer)
 
     this.documentX = 0;
     this.documentY = 0;
+    this.width = 0;
+    this.height = 0;
 
     var bounds = this.layer.bounds;
     if (bounds !== undefined)
     {
        this.documentX = bounds[0].as("px");
        this.documentY = bounds[1].as("px");
+       this.width = bounds[2].as("px") - bounds[0].as("px");
+       this.height = bounds[3].as("px") - bounds[1].as("px");
     }
 
     this.x = this.documentX - parentX;

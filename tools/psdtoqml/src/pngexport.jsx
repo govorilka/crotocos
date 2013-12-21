@@ -67,9 +67,7 @@ PngExport.prototype.save = function(layer)
     var folder = new Folder(this.path + "images/");
     if (folder.exists || folder.create())
     {
-        // Сохраняем временный документ в формате PNG 
-        alert(this.path + filename);
-        
+        // Сохраняем временный документ в формате PNG        
         var pngFile = new File(this.path + filename);
         tmpDocument.exportDocument(pngFile, ExportType.SAVEFORWEB, this.options);
     }

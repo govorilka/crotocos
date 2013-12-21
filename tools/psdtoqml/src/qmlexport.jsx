@@ -86,6 +86,10 @@ QmlExport.prototype.doExportLayers = function(qmlfile, parent, layers)
         
         if(layerProxy.layer.typename == "LayerSet")
         {
+            // Для "папок" мы записываем также размеры, чтобы было проще
+            // потом верстать
+            qmlfile.writeProperty("width", layerProxy.width);
+            qmlfile.writeProperty("height", layerProxy.height);
             this.doExportLayers(qmlfile, layerProxy, layerProxy.layer.layers);
         }
         else
