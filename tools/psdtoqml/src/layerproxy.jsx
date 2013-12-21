@@ -53,3 +53,9 @@ LayerProxy.prototype.qmlType = function()
     // По умолчанию все слои будем сохранять, как картинки
     return "Image";
 }
+
+LayerProxy.prototype.idToQmlType = function(id)
+{
+   var firstChar = id.substr(0, 1).toLocaleUpperCase();
+   return firstChar + id.substr(1, id.length - 1);
+}

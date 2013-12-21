@@ -3,6 +3,7 @@
  */
 
 // @include "qmlfile.jsx"
+// @include "qmldirfile.jsx"
 // @include "pngexport.jsx"
 // @include "layerproxy.jsx"
 
@@ -10,6 +11,7 @@ function QmlExportParams()
 {
     this.path = "";
     this.useLayerName = false;
+    this.useIndividualFile = true;
 }
 
 function QmlExport(params, document)
@@ -17,6 +19,9 @@ function QmlExport(params, document)
     this.params = params;
     this.document = document;
     
+    // Файл qmldir
+    this.qmldir = new QmlDirFile(this.params.path + "/qmldir");
+
     // Класс для экспорта png-файлов
     this.pngExport = new PngExport(this.params.path, this.params.useLayerName, document);
     
@@ -85,11 +90,13 @@ QmlExport.prototype.doExportLayers = function(qmlfile, parent, layers)
             itemComment = layerProxy.layer.name;
         }
     
+        if (this.params.useIndividualFile && layerProxy.layer.typename == "LayerSet")
+        {
+            qmltype = layerProxy.idToQmlType(itemId);
+        }
+
         qmlfile.writeEmptyLine();
         qmlfile.startElement(qmltype, itemId, itemComment);
-        
-        qmlfile.writeProperty("x", layerProxy.x);
-        qmlfile.writeProperty("y", layerProxy.y);
         
         // Значение прозрачности. В Photoshop'е оно задаётся 
         // значением от 0 до 100 в процентах. Если значение прозрачности
@@ -99,32 +106,51 @@ QmlExport.prototype.doExportLayers = function(qmlfile, parent, layers)
         { 
             qmlfile.writeProperty("opacity", opacity / 100.0);
         }
+
+        qmlfile.writeProperty("x", layerProxy.x);
+        qmlfile.writeProperty("y", layerProxy.y);
         
         if(layerProxy.layer.typename == "LayerSet")
         {
-            // Для "папок" мы записываем также размеры, чтобы было проще
-            // потом верстать
-            qmlfile.writeProperty("width", layerProxy.width);
-            qmlfile.writeProperty("height", layerProxy.height);
-            this.doExportLayers(qmlfile, layerProxy, layerProxy.layer.layers);
+            if (this.params.useIndividualFile)
+            {
+                this.qmldir.writeType(qmltype, "1.0", qmltype + ".qml");
+                
+                // Отдельный файл для папки
+                var itemQmlfile = new QmlFile(this.params.path + "/" + qmltype + ".qml");
+                itemQmlfile.writeLine("import QtQuick 2.1");
+                itemQmlfile.writeEmptyLine();
+                    itemQmlfile.startElement("Item", "root", itemId);
+                    itemQmlfile.writeProperty("width", layerProxy.width);
+                    itemQmlfile.writeProperty("height", layerProxy.height);
+                    this.doExportLayers(itemQmlfile, layerProxy, layerProxy.layer.layers);
+                itemQmlfile.endElement();
+            }
+            else
+            {
+                // Для "папок" мы записываем также размеры, чтобы было проще
+                // потом верстать
+                qmlfile.writeProperty("width", layerProxy.width);
+                qmlfile.writeProperty("height", layerProxy.height);
+                
+                this.doExportLayers(qmlfile, layerProxy, layerProxy.layer.layers);
+            }
         }
         else
-        {
-            var layer = layerProxy.layer;
-            
+        {        
             switch (qmltype)
             {
-            case "Image":
-                qmlfile.writeStringProperty("source", this.pngExport.save(layer));
+                case "Image":
+                qmlfile.writeStringProperty("source", this.pngExport.save(layerProxy.layer));
                 break;
-            
-            case "Text":
+
+                case "Text":
                 this.doExportTextLayer(qmlfile, layerProxy);
                 break;
             }
         }
         
-        qmlfile.endElement();
+        qmlfile.endElement();        
     }
 }
 
