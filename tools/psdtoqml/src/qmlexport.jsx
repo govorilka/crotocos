@@ -6,16 +6,22 @@
 // @include "pngexport.jsx"
 // @include "layerproxy.jsx"
 
-function QmlExport(path, document)
+function QmlExportParams()
 {
-    this.path = path;
+    this.path = "";
+    this.useLayerName = false;
+}
+
+function QmlExport(params, document)
+{
+    this.params = params;
     this.document = document;
     
     // Класс для экспорта png-файлов
-    this.pngExport = new PngExport(path, document);
+    this.pngExport = new PngExport(this.params.path, this.params.useLayerName, document);
     
     // Основной qmlfile
-    var qmlfile = new QmlFile(this.path + "/main.qml");
+    var qmlfile = new QmlFile(this.params.path + "/main.qml");
     qmlfile.writeLine("import QtQuick 2.1");
     qmlfile.writeEmptyLine();
     qmlfile.startElement("Item", "root", document.name);
@@ -48,12 +54,23 @@ QmlExport.prototype.doExportLayers = function(qmlfile, parent, layers)
             continue;
         }
     
-        // Пока запичываем все элементы с именами item1, item2, item3
-        // - в именах встречаются русские буквы и пробелы и их надо
-        // конвертировать
-        this.itemCounter++;
+        // Записываем новый элемент
+        var itemId;
+        var itemComment;
+        if (this.params.useLayerName)
+        {
+            itemId = layerProxy.layer.name;
+            itemComment = "";
+        }
+        else
+        {
+            this.itemCounter++;    
+            itemId = "item" + this.itemCounter;
+            itemComment = layerProxy.layer.name;
+        }
+    
         qmlfile.writeEmptyLine();
-        qmlfile.startElement(qmltype, "item" + this.itemCounter, layerProxy.layer.name);
+        qmlfile.startElement(qmltype, itemId, itemComment);
         
         qmlfile.writeProperty("x", layerProxy.x);
         qmlfile.writeProperty("y", layerProxy.y);

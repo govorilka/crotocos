@@ -25,7 +25,10 @@ QmlFile.prototype.writeComment = function(line)
 
 QmlFile.prototype.startElement = function(className, id, comment)
 {
-    this.writeComment(comment);
+    if (comment != "")
+    {
+        this.writeComment(comment);
+    }
     this.writeLine(className + " {");
     
     this.lineSpaceCount += 4;
