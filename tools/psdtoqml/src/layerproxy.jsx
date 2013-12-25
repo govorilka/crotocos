@@ -59,3 +59,12 @@ LayerProxy.prototype.idToQmlType = function(id)
    var firstChar = id.substr(0, 1).toLocaleUpperCase();
    return firstChar + id.substr(1, id.length - 1);
 }
+
+LayerProxy.prototype.fullName = function(separator)
+{
+    if (this.parent !== undefined)
+    {
+        return this.parent.fullName(separator) + separator + this.layer.name;
+    }
+    return this.layer.name;
+}

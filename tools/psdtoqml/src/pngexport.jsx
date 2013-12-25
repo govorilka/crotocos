@@ -2,6 +2,8 @@
  * Crotocos::pngexport.jsx
  */
 
+// @include "layerproxy.jsx"
+
 function PngExport(path, useLayerName, document)
 {
     this.path = path;
@@ -21,12 +23,12 @@ PngExport.prototype.options.optimized = true;
 // Для этого заводим специальный счетчик.
 PngExport.prototype.fileCounter = 0; 
 
-PngExport.prototype.save = function(layer)
+PngExport.prototype.save = function(layer_proxy)
 {
     var filename;
     if (this.useLayerName)
     {
-        filename = 'images/' + layer.name + '.png';
+        filename = 'images/' + layer_proxy.fullName("_") + '.png';
     }
     else
     {
@@ -34,8 +36,8 @@ PngExport.prototype.save = function(layer)
         filename = 'images/i' + this.fileCounter +'.png';
     }
  
-    var width = layer.bounds[2].as("px") - layer.bounds[0].as("px");
-    var height = layer.bounds[3].as("px") - layer.bounds[1].as("px");
+    var width = layer_proxy.width;
+    var height = layer_proxy.height;
     
     var oldActiveDocument = app.activeDocument;
     
@@ -54,14 +56,14 @@ PngExport.prototype.save = function(layer)
   
     // Копируем слой во временный документ
     app.activeDocument = this.document;
-    newLayer = layer.duplicate(tmpDocument, ElementPlacement.INSIDE);
+    newLayer = layer_proxy.layer.duplicate(tmpDocument, ElementPlacement.INSIDE);
     
     // Устанавливаем слой по центр временного документа
     app.activeDocument = tmpDocument;
     
     newLayer.positionLocked = false;
     newLayer.opacity = 100.0;
-    newLayer.translate(-layer.bounds[0], -layer.bounds[1]);
+    newLayer.translate(-layer_proxy.layer.bounds[0], -layer_proxy.layer.bounds[1]);
 
     // Создаём папку images, если она не существует. В эту папку будем сохранять png-файлы
     var folder = new Folder(this.path + "images/");

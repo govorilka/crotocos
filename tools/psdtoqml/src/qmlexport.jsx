@@ -141,7 +141,7 @@ QmlExport.prototype.doExportLayers = function(qmlfile, parent, layers)
             switch (qmltype)
             {
                 case "Image":
-                qmlfile.writeStringProperty("source", this.pngExport.save(layerProxy.layer));
+                qmlfile.writeStringProperty("source", this.pngExport.save(layerProxy));
                 break;
 
                 case "Text":
