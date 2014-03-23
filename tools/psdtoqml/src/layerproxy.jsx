@@ -7,6 +7,7 @@ function LayerProxy(parent, layer)
     this.parent = parent;
     this.layer = layer;
     
+    // 1. Вычисляем координаты элемента
     var parentX = 0;
     var parentY = 0;
     if (this.parent !== undefined)
@@ -31,7 +32,29 @@ function LayerProxy(parent, layer)
 
     this.x = this.documentX - parentX;
     this.y = this.documentY - parentY;
+    
+    // 2. Вычисляем id для нового элемента 
+    if (this.namePattern.test(this.layer.name))
+    {
+        var id = this.layer.name;
+        var firstChar = id.substr(0, 1).toLocaleLowerCase();
+        
+        this.itemId = firstChar + id.substr(1, id.length - 1);
+        this.itemComment = "";
+    }
+    else
+    {
+        LayerProxy.itemCounter++;
+        this.itemId = "item" + LayerProxy.itemCounter;
+        this.itemComment = this.layer.name;
+    }
 }
+
+//  RegExp проверяющий название экпортируемого слоя
+LayerProxy.prototype.namePattern = /^[a-zA-Z$][0-9a-zA-Z_$]*$/; 
+
+// Счётчик для генерации имен переменных
+LayerProxy.itemCounter = 0;
 
 LayerProxy.prototype.qmlType = function()
 {
@@ -39,7 +62,6 @@ LayerProxy.prototype.qmlType = function()
     {
         return "Item";
     }
-
 
     if(this.layer.typename == "ArtLayer" && this.layer.kind !== undefined)
     {
@@ -64,7 +86,7 @@ LayerProxy.prototype.fullName = function(separator)
 {
     if (this.parent !== undefined)
     {
-        return this.parent.fullName(separator) + separator + this.layer.name;
+        return this.parent.fullName(separator) + separator + this.itemId;
     }
-    return this.layer.name;
+    return this.itemId;
 }

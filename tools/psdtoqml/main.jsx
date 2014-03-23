@@ -28,14 +28,6 @@ function directoryName(params)
             chooseDirectoryDlg.outputName.text = selFolder.fsName;
         }
     }
-
-    // Галочка "Использовать имена слоёв"
-    chooseDirectoryDlg.groupUseLayerName = chooseDirectoryDlg.add("group");
-    chooseDirectoryDlg.groupUseLayerName.orientation = 'row';
-    chooseDirectoryDlg.groupUseLayerName.alignChildren = 'left';
-    chooseDirectoryDlg.groupUseLayerName.alignment = 'fill';
-    
-    chooseDirectoryDlg.useLayerName_checkbox = chooseDirectoryDlg.groupUseLayerName.add("checkbox", undefined, "Использовать имена слоёв");
     
     // Кнопки Ok и "Отмена"
     chooseDirectoryDlg.groupButtonsLine = chooseDirectoryDlg.add("group");
@@ -53,6 +45,7 @@ function directoryName(params)
             alert("Вы должны указать директорию.");
             return;
         }
+
 
         var testFolder = new Folder(destination);
         if (!testFolder.exists)

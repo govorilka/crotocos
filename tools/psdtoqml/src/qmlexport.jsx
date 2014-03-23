@@ -10,7 +10,6 @@
 function QmlExportParams()
 {
     this.path = "";
-    this.useLayerName = false;
     this.useIndividualFile = true;
 }
 
@@ -18,27 +17,37 @@ function QmlExport(params, document)
 {
     this.params = params;
     this.document = document;
-    
+        
     // Файл qmldir
     this.qmldir = new QmlDirFile(this.params.path + "/qmldir");
 
     // Класс для экспорта png-файлов
-    this.pngExport = new PngExport(this.params.path, this.params.useLayerName, document);
+    this.pngExport = new PngExport(this.params.path, document);
     
     //Файл проекта, чтобы нормально открыть все в QtCreator'e
     var qmlfile = new QmlFile(this.params.path + "/main.qmlproject");
     qmlfile.writeLine("import QmlProject 1.0");
     qmlfile.writeEmptyLine();
     qmlfile.startElement("Project", "", "");
+    
+        qmlfile.writeStringProperty("mainFile", "qmlframe.qml");
+        
+        qmlfile.writeEmptyLine();
         qmlfile.startElement("QmlFiles", "", "");
             qmlfile.writeStringProperty("directory", ".");
         qmlfile.endElement();
+        
+        qmlfile.writeEmptyLine();
         qmlfile.startElement("JavaScriptFiles", "", "");
             qmlfile.writeStringProperty("directory", ".");
         qmlfile.endElement();
+        qmlfile.writeEmptyLine();
+        
+        qmlfile.writeEmptyLine();
         qmlfile.startElement("ImageFiles", "", "");
             qmlfile.writeStringProperty("directory", ".");
         qmlfile.endElement();
+ 
     qmlfile.endElement();
     
     // Основной qmlfile
@@ -75,28 +84,14 @@ QmlExport.prototype.doExportLayers = function(qmlfile, parent, layers)
             continue;
         }
     
-        // Записываем новый элемент
-        var itemId;
-        var itemComment;
-        if (this.params.useLayerName)
-        {
-            itemId = layerProxy.layer.name;
-            itemComment = "";
-        }
-        else
-        {
-            this.itemCounter++;    
-            itemId = "item" + this.itemCounter;
-            itemComment = layerProxy.layer.name;
-        }
-    
+        // Записываем новый элемент        
         if (this.params.useIndividualFile && layerProxy.layer.typename == "LayerSet")
         {
-            qmltype = layerProxy.idToQmlType(itemId);
+            qmltype = layerProxy.idToQmlType(layerProxy.itemId);
         }
 
         qmlfile.writeEmptyLine();
-        qmlfile.startElement(qmltype, itemId, itemComment);
+        qmlfile.startElement(qmltype, layerProxy.itemId, layerProxy.itemComment);
         
         // Значение прозрачности. В Photoshop'е оно задаётся 
         // значением от 0 до 100 в процентах. Если значение прозрачности
@@ -120,7 +115,7 @@ QmlExport.prototype.doExportLayers = function(qmlfile, parent, layers)
                 var itemQmlfile = new QmlFile(this.params.path + "/" + qmltype + ".qml");
                 itemQmlfile.writeLine("import QtQuick 2.1");
                 itemQmlfile.writeEmptyLine();
-                    itemQmlfile.startElement("Item", "root", itemId);
+                    itemQmlfile.startElement("Item", "root", layerProxy.itemId);
                     itemQmlfile.writeProperty("width", layerProxy.width);
                     itemQmlfile.writeProperty("height", layerProxy.height);
                     this.doExportLayers(itemQmlfile, layerProxy, layerProxy.layer.layers);

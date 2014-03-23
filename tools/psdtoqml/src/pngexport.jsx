@@ -4,10 +4,9 @@
 
 // @include "layerproxy.jsx"
 
-function PngExport(path, useLayerName, document)
+function PngExport(path, document)
 {
     this.path = path;
-    this.useLayerName = useLayerName;
     this.document = document;
     this.fileCounter = 0;
 }
@@ -19,22 +18,9 @@ PngExport.prototype.options.PNG8 = false;
 PngExport.prototype.options.transparency = true;
 PngExport.prototype.options.optimized = true;
 
-// Файлы будут иметь имена image1, image2, image3
-// Для этого заводим специальный счетчик.
-PngExport.prototype.fileCounter = 0; 
-
 PngExport.prototype.save = function(layer_proxy)
 {
-    var filename;
-    if (this.useLayerName)
-    {
-        filename = 'images/' + layer_proxy.fullName("_") + '.png';
-    }
-    else
-    {
-        this.fileCounter++;
-        filename = 'images/i' + this.fileCounter +'.png';
-    }
+    var filename = 'images/' + layer_proxy.fullName("_") + '.png';
  
     var width = layer_proxy.width;
     var height = layer_proxy.height;
@@ -83,7 +69,7 @@ PngExport.prototype.save = function(layer_proxy)
     // Закрываем временный документ, без сохранения изменений
     tmpDocument.close(SaveOptions.DONOTSAVECHANGES);
     
-    // Восстанавдиваем прежний активный документ
+    // Восстанавливаем прежний активный документ
     app.activeDocument = oldActiveDocument;
     
     return filename;
