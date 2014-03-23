@@ -30,7 +30,7 @@ function QmlExport(params, document)
     qmlfile.writeEmptyLine();
     qmlfile.startElement("Project", "", "");
     
-        qmlfile.writeStringProperty("mainFile", "qmlframe.qml");
+        qmlfile.writeStringProperty("mainFile", "main.qml");
         
         qmlfile.writeEmptyLine();
         qmlfile.startElement("QmlFiles", "", "");
