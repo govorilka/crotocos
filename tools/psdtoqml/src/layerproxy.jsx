@@ -48,6 +48,25 @@ function LayerProxy(parent, layer)
         this.itemId = "item" + LayerProxy.itemCounter;
         this.itemComment = this.layer.name;
     }
+
+    // 3. x и y для текстового поля
+    this.pointText = 
+        this.layer.typename == "ArtLayer" 
+            && this.layer.kind == LayerKind.TEXT
+            && this.layer.textItem.kind == TextType.POINTTEXT;
+    if (this.pointText)
+    {
+        var textItem = this.layer.textItem;
+     
+        this.textX = textItem.position[0].as("px") - parentX;        
+        this.textY = textItem.position[1].as("px") - parentY;
+        
+        try
+        {
+            this.textX += textItem.leftIndent.as("px");
+        }
+        catch(e){}
+    }
 }
 
 //  RegExp проверяющий название экпортируемого слоя
@@ -63,7 +82,7 @@ LayerProxy.prototype.qmlType = function()
         return "Item";
     }
 
-    if(this.layer.typename == "ArtLayer" && this.layer.kind !== undefined)
+    if (this.layer.typename == "ArtLayer" && this.layer.kind !== undefined)
     {
         switch(this.layer.kind)
         {

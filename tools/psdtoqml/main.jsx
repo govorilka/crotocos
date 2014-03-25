@@ -55,7 +55,6 @@ function directoryName(params)
         }
     
         params.path = destination;
-        params.useLayerName = chooseDirectoryDlg.useLayerName_checkbox.value;
         
         chooseDirectoryDlg.close(1);
     }

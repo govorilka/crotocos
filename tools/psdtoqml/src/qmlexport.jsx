@@ -76,7 +76,15 @@ QmlExport.prototype.doExportLayers = function(qmlfile, parent, layers)
         }
     
         var layerProxy = new LayerProxy(parent, layer);
-            
+                
+        qmlfile.writeEmptyLine();
+
+        if (layerProxy.pointText)
+        {
+            this.doExportPointTextLayer(qmlfile, layerProxy);
+            continue;
+        }
+    
         // Получаем имя qml-типа
         var qmltype = layerProxy.qmlType();      
         if (qmltype.size == 0)
@@ -89,19 +97,11 @@ QmlExport.prototype.doExportLayers = function(qmlfile, parent, layers)
         {
             qmltype = layerProxy.idToQmlType(layerProxy.itemId);
         }
-
-        qmlfile.writeEmptyLine();
+        
         qmlfile.startElement(qmltype, layerProxy.itemId, layerProxy.itemComment);
         
-        // Значение прозрачности. В Photoshop'е оно задаётся 
-        // значением от 0 до 100 в процентах. Если значение прозрачности
-        // не равно 100%, то мы записываем его в файл.
-        var opacity = layerProxy.layer.opacity;
-        if (opacity != 100.0)
-        { 
-            qmlfile.writeProperty("opacity", opacity / 100.0);
-        }
-
+        this.doExportOpacity(qmlfile, layerProxy);
+        
         qmlfile.writeProperty("x", layerProxy.x);
         qmlfile.writeProperty("y", layerProxy.y);
         
@@ -166,4 +166,76 @@ QmlExport.prototype.doExportTextLayer = function(qmlfile, layerProxy)
     qmlfile.writeColor("color", textItem.color);
    
     qmlfile.writeStringProperty("text", textItem.contents);
+}
+
+QmlExport.prototype.doExportPointTextLayer = function(qmlfile, layerProxy)
+{
+    var textItem = layerProxy.layer.textItem;
+    
+    var anchorsItemId = layerProxy.itemId + "Anchor";
+    
+    var horizontalAnchor = "anchors.left";
+    try 
+    {
+        // Выравнивание может быть не задано. Тогда при обращение к свойству
+        // будет сгенерировано исключение
+        switch (textItem.justification)    
+        {
+        case Justification.LEFT:
+            horizontalAnchor = "anchors.left";
+            break;
+     
+        case Justification.RIGHT:
+            horizontalAnchor = "anchors.right";
+            break;
+            
+        case Justification.CENTER:
+            horizontalAnchor = "anchors.horizontalCenter";
+            break; 
+        
+        default:
+            horizontalAnchor = "anchors.left";
+        }
+    }
+    catch(e){}
+
+    qmlfile.startElement("Item", anchorsItemId, "Anchor item for " + layerProxy.itemId);
+        qmlfile.writeProperty("x", layerProxy.textX);
+        qmlfile.writeProperty("y", layerProxy.textY - layerProxy.height);
+        qmlfile.writeProperty("width", layerProxy.width);
+        qmlfile.writeProperty("height", layerProxy.height);
+    qmlfile.endElement();
+    
+    qmlfile.startElement("Text", layerProxy.itemId, layerProxy.itemComment);
+    
+        this.doExportOpacity(qmlfile, layerProxy);
+    
+        qmlfile.writeProperty(horizontalAnchor, anchorsItemId + ".left");
+        qmlfile.writeProperty("anchors.baseline", anchorsItemId + ".bottom");
+        qmlfile.writeStringProperty("font.family", textItem.font);
+        qmlfile.writeProperty("font.pixelSize", textItem.size.as("px"));
+        
+        try
+        {
+            // Цвет текста может быть не задан. Тогда при обращении к свойству
+            // будет сгенерировано исключение
+            qmlfile.writeColor("color", textItem.color);
+        }
+        catch(e){}
+         
+        qmlfile.writeStringProperty("text", textItem.contents);
+        
+    qmlfile.endElement();
+}
+
+QmlExport.prototype.doExportOpacity = function(qmlfile, layerProxy)
+{
+    // Значение прозрачности. В Photoshop'е оно задаётся 
+    // значением от 0 до 100 в процентах. Если значение прозрачности
+    // не равно 100%, то мы записываем его в файл.
+    var opacity = layerProxy.layer.opacity;
+    if (opacity != 100.0)
+    { 
+        qmlfile.writeProperty("opacity", opacity / 100.0);
+    }
 }
