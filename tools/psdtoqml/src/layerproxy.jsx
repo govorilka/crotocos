@@ -50,14 +50,19 @@ function LayerProxy(parent, layer)
     }
 
     // 3. x и y для текстового поля
-    this.pointText = 
-        this.layer.typename == "ArtLayer" 
-            && this.layer.kind == LayerKind.TEXT
-            && this.layer.textItem.kind == TextType.POINTTEXT;
-    if (this.pointText)
+    this.pointText = false;
+    this.paragraphText = false;
+    if ( this.layer.typename == "ArtLayer" && this.layer.kind == LayerKind.TEXT)
     {
         var textItem = this.layer.textItem;
-     
+        
+        this.pointText = (textItem.kind == TextType.POINTTEXT);
+        
+        if (textItem.kind == TextType.PARAGRAPHTEXT)
+        {
+             this.paragraphText = true;
+        }
+       
         this.textX = textItem.position[0].as("px") - parentX;        
         this.textY = textItem.position[1].as("px") - parentY;
         

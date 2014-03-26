@@ -85,6 +85,12 @@ QmlExport.prototype.doExportLayers = function(qmlfile, parent, layers)
             continue;
         }
     
+        if (layerProxy.paragraphText)
+        {
+            this.doExportParagraphTextLayer(qmlfile, layerProxy);
+            continue;
+        }
+    
         // Получаем имя qml-типа
         var qmltype = layerProxy.qmlType();      
         if (qmltype.size == 0)
@@ -150,22 +156,24 @@ QmlExport.prototype.doExportLayers = function(qmlfile, parent, layers)
     }
 }
 
-QmlExport.prototype.doExportTextLayer = function(qmlfile, layerProxy)
+QmlExport.prototype.doExportParagraphTextLayer = function(qmlfile, layerProxy)
 {
     var textItem = layerProxy.layer.textItem;
+ 
+    qmlfile.startElement("Text", layerProxy.itemId, layerProxy.itemComment);
     
-    if (textItem.kind == TextType.PARAGRAPHTEXT)
-    {
-        qmlfile.writeProperty("width", layerProxy.width);
-        qmlfile.writeProperty("height", layerProxy.height);
+        qmlfile.writeProperty("x", layerProxy.textX);
+        qmlfile.writeProperty("y", layerProxy.textY);
+    
+        qmlfile.writeProperty("width", textItem.width.as("px"));
+        qmlfile.writeProperty("height", textItem.height.as("px"));
         qmlfile.writeProperty("wrapMode", "Text.WordWrap");
-    }
-
-    qmlfile.writeStringProperty("font.family", textItem.font);
-    qmlfile.writeProperty("font.pixelSize", textItem.size.as("px"));
-    qmlfile.writeColor("color", textItem.color);
-   
-    qmlfile.writeStringProperty("text", textItem.contents);
+        
+        this.doExportTextStyle(qmlfile, textItem);
+ 
+        qmlfile.writeStringProperty("text", textItem.contents);
+    
+    qmlfile.endElement(); 
 }
 
 QmlExport.prototype.doExportPointTextLayer = function(qmlfile, layerProxy)
@@ -212,21 +220,26 @@ QmlExport.prototype.doExportPointTextLayer = function(qmlfile, layerProxy)
     
         qmlfile.writeProperty(horizontalAnchor, anchorsItemId + ".left");
         qmlfile.writeProperty("anchors.baseline", anchorsItemId + ".bottom");
-        qmlfile.writeStringProperty("font.family", textItem.font);
-        qmlfile.writeProperty("font.pixelSize", textItem.size.as("px"));
         
-        try
-        {
-            // Цвет текста может быть не задан. Тогда при обращении к свойству
-            // будет сгенерировано исключение
-            qmlfile.writeColor("color", textItem.color);
-        }
-        catch(e){}
-         
+        this.doExportTextStyle(qmlfile, textItem);
+                 
         qmlfile.writeStringProperty("text", textItem.contents);
         
     qmlfile.endElement();
 }
+
+QmlExport.prototype.doExportTextStyle = function(qmlfile, textItem)
+{
+    qmlfile.writeStringProperty("font.family", textItem.font);
+    qmlfile.writeProperty("font.pixelSize", textItem.size.as("px"));
+    try
+    {
+        // Цвет текста может быть не задан. Тогда при обращении к свойству
+        // будет сгенерировано исключение
+        qmlfile.writeColor("color", textItem.color);
+    }
+    catch(e){}
+}   
 
 QmlExport.prototype.doExportOpacity = function(qmlfile, layerProxy)
 {
