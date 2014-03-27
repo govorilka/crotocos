@@ -33,16 +33,10 @@ function LayerProxy(parent, layer)
     this.x = this.documentX - parentX;
     this.y = this.documentY - parentY;
     
-    // 2. Вычисляем id для нового элемента 
-    if (this.namePattern.test(this.layer.name))
-    {
-        var id = this.layer.name;
-        var firstChar = id.substr(0, 1).toLocaleLowerCase();
-        
-        this.itemId = firstChar + id.substr(1, id.length - 1);
-        this.itemComment = "";
-    }
-    else
+    // 2. Вычисляем id для нового элемента
+    this.itemId = this.idByLayerName(this.layer.name);
+    this.itemComment = "";
+    if (this.itemId == "")
     {
         LayerProxy.itemCounter++;
         this.itemId = "item" + LayerProxy.itemCounter;
@@ -80,6 +74,9 @@ LayerProxy.prototype.namePattern = /^[a-zA-Z$][0-9a-zA-Z_$]*$/;
 // Счётчик для генерации имен переменных
 LayerProxy.itemCounter = 0;
 
+// Массив всех экпортируемых имён
+LayerProxy.uniItemIds = new Array();
+
 LayerProxy.prototype.qmlType = function()
 {
     if(this.layer.typename == "LayerSet")
@@ -113,4 +110,26 @@ LayerProxy.prototype.fullName = function(separator)
         return this.parent.fullName(separator) + separator + this.itemId;
     }
     return this.itemId;
+}
+
+LayerProxy.prototype.idByLayerName = function(id)
+{
+    if (!this.namePattern.test(this.layer.name))
+    {
+        return "";
+    }
+
+    var firstChar = id.substr(0, 1).toLocaleLowerCase();
+    var itemId = firstChar + id.substr(1, id.length - 1);
+    
+    for (var key in LayerProxy.uniItemIds)
+    {
+        if (LayerProxy.uniItemIds[key] == itemId)
+        {
+            return "";
+        }
+    }
+
+    LayerProxy.uniItemIds.push(itemId);
+    return itemId;
 }
