@@ -230,7 +230,9 @@ QmlExport.prototype.doExportPointTextLayer = function(qmlfile, layerProxy)
 
 QmlExport.prototype.doExportTextStyle = function(qmlfile, textItem)
 {
-    qmlfile.writeStringProperty("font.family", textItem.font);
+    var font = app.fonts.getByName(textItem.font);
+    qmlfile.writeStringProperty("font.family", font !== undefined ? font.family : textItem.font);
+    
     qmlfile.writeProperty("font.pixelSize", textItem.size.as("px"));
     try
     {
